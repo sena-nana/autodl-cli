@@ -73,6 +73,14 @@ impl AutoDlClient {
             .header(header::AUTHORIZATION, &self.token)
     }
 
+    fn log_payload<B: Serialize>(&self, label: &str, payload: &B) {
+        if self.verbose
+            && let Ok(s) = serde_json::to_string(payload)
+        {
+            eprintln!("[debug] HTTP {label}={s}");
+        }
+    }
+
     pub async fn post_empty<T: DeserializeOwned>(&self, path: &str) -> Result<T, AppError> {
         let resp = self.build(Method::POST, path).body("").send().await?;
         self.parse_response(resp).await
@@ -83,6 +91,7 @@ impl AutoDlClient {
         path: &str,
         body: &B,
     ) -> Result<T, AppError> {
+        self.log_payload("body", body);
         let resp = self.build(Method::POST, path).json(body).send().await?;
         self.parse_response(resp).await
     }
@@ -92,21 +101,24 @@ impl AutoDlClient {
         path: &str,
         body: &B,
     ) -> Result<T, AppError> {
+        self.log_payload("body", body);
         let resp = self.build(Method::POST, path).json(body).send().await?;
         self.parse_response_or_default(resp).await
     }
 
     pub async fn post_json_unit<B: Serialize>(&self, path: &str, body: &B) -> Result<(), AppError> {
+        self.log_payload("body", body);
         let resp = self.build(Method::POST, path).json(body).send().await?;
         self.parse_unit_response(resp).await
     }
 
-    /// AutoDL Pro endpoints `snapshot` and `status` use `GET` with a JSON request body.
+    /// AutoDL Pro endpoints `snapshot` and `status` may accept `GET` with a JSON request body.
     pub async fn get_with_json_body<B: Serialize, T: DeserializeOwned>(
         &self,
         path: &str,
         body: &B,
     ) -> Result<T, AppError> {
+        self.log_payload("body", body);
         let resp = self.build(Method::GET, path).json(body).send().await?;
         self.parse_response(resp).await
     }
@@ -129,6 +141,7 @@ impl AutoDlClient {
         path: &str,
         query: &Q,
     ) -> Result<T, AppError> {
+        self.log_payload("query", query);
         let resp = self.build(Method::GET, path).query(query).send().await?;
         self.parse_response(resp).await
     }
@@ -138,11 +151,13 @@ impl AutoDlClient {
         path: &str,
         query: &Q,
     ) -> Result<T, AppError> {
+        self.log_payload("query", query);
         let resp = self.build(Method::GET, path).query(query).send().await?;
         self.parse_response_or_default(resp).await
     }
 
     pub async fn put_json_unit<B: Serialize>(&self, path: &str, body: &B) -> Result<(), AppError> {
+        self.log_payload("body", body);
         let resp = self.build(Method::PUT, path).json(body).send().await?;
         self.parse_unit_response(resp).await
     }
@@ -152,6 +167,7 @@ impl AutoDlClient {
         path: &str,
         body: &B,
     ) -> Result<(), AppError> {
+        self.log_payload("body", body);
         let resp = self.build(Method::DELETE, path).json(body).send().await?;
         self.parse_unit_response(resp).await
     }

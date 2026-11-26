@@ -110,29 +110,29 @@ pub struct GoNullTime {
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct ProInstanceSummary {
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub created_at: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub uuid: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub machine_id: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub machine_alias: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub region_sign: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub region_name: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub status: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub sub_status: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub status_at: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub start_mode: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub charge_type: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub req_gpu_amount: u32,
     #[serde(default)]
     pub expired_at: GoNullTime,
@@ -140,87 +140,87 @@ pub struct ProInstanceSummary {
     pub started_at: GoNullTime,
     #[serde(default)]
     pub stopped_at: GoNullTime,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub name: String,
     #[serde(default)]
     pub timed_shutdown_at: GoNullTime,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub gpu_spec_uuid: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct UsageInfo {
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub container_id: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub valid_at: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub cpu_usage_percent: f64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub mem_usage_percent: f64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub mem_usage: u64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub mem_limit: u64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub root_fs_used_size: u64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub root_fs_total_size: u64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub data_disk_total_size: u64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub data_disk_used_size: u64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub pull_image_progress: f64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub download_image_progress: f64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub download_oss_file_progress: f64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub is_new: bool,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub valid: bool,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct ProInstanceSnapshot {
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub region_sign: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub payg_price: i64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub origin_pay_price: i64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub snapshot_gpu_alias_name: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub chip_corp: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub cpu_arch: String,
     #[serde(default)]
     pub usage_info: Option<UsageInfo>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub expand_system_disk_size: u64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub system_init_disk_size: u64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub ssh_command: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub proxy_host: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub root_password: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub ssh_port: u16,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub jupyter_token: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub jupyter_domain: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub service_6006_domain: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub service_6006_port_protocol: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub service_6008_domain: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub service_6008_port_protocol: String,
 }
 
@@ -232,21 +232,21 @@ pub struct SaveProImageReq {
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct SaveProImageResp {
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub image_uuid: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct ProPrivateImage {
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub image_uuid: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub name: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub status: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub image_size: u64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub create_at: String,
 }
 

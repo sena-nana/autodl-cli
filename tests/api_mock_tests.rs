@@ -91,11 +91,11 @@ async fn test_pro_instance_lifecycle_and_get_with_json_body() {
         .mount(&server)
         .await;
 
-    // AutoDL snapshot & status use GET with JSON body
+    // AutoDL snapshot & status use GET with query param `instance_uuid` (with JSON body fallback)
     Mock::given(method("GET"))
         .and(path("/api/v1/dev/instance/pro/snapshot"))
         .and(header("Authorization", "tok-pro"))
-        .and(body_json(json!({"instance_uuid": "pro-abc123"})))
+        .and(query_param("instance_uuid", "pro-abc123"))
         .respond_with(ResponseTemplate::new(200).set_body_json(json!({
             "code": "Success",
             "data": {
@@ -174,7 +174,7 @@ async fn test_pro_instance_lifecycle_and_get_with_json_body() {
     // stop_and_release_pro sequence: status("running") -> power_off -> status("shutdown") -> release
     Mock::given(method("GET"))
         .and(path("/api/v1/dev/instance/pro/status"))
-        .and(body_json(json!({"instance_uuid": "pro-abc123"})))
+        .and(query_param("instance_uuid", "pro-abc123"))
         .respond_with(ResponseTemplate::new(200).set_body_json(json!({
             "code": "Success",
             "data": "running",
@@ -198,7 +198,7 @@ async fn test_pro_instance_lifecycle_and_get_with_json_body() {
 
     Mock::given(method("GET"))
         .and(path("/api/v1/dev/instance/pro/status"))
-        .and(body_json(json!({"instance_uuid": "pro-abc123"})))
+        .and(query_param("instance_uuid", "pro-abc123"))
         .respond_with(ResponseTemplate::new(200).set_body_json(json!({
             "code": "Success",
             "data": "shutdown",
@@ -498,4 +498,67 @@ async fn test_go_null_lists_and_null_data_deserialize_as_empty() {
 
     let blacklist = client.list_deployment_blacklist().await.unwrap();
     assert!(blacklist.is_empty());
+}
+
+#[tokio::test]
+async fn test_pro_get_fallback_to_json_body_and_null_snapshot_fields() {
+    let server = MockServer::start().await;
+
+    // Query param attempt returns RequestParameterIsWrong; client must retry with GET + JSON body.
+    Mock::given(method("GET"))
+        .and(path("/api/v1/dev/instance/pro/status"))
+        .and(query_param("instance_uuid", "pro-fb1"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "code": "RequestParameterIsWrong",
+            "data": null,
+            "msg": "请求参数错误"
+        })))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    Mock::given(method("GET"))
+        .and(path("/api/v1/dev/instance/pro/status"))
+        .and(body_json(json!({"instance_uuid": "pro-fb1"})))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "code": "Success",
+            "data": "shutdown",
+            "msg": ""
+        })))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    Mock::given(method("GET"))
+        .and(path("/api/v1/dev/instance/pro/snapshot"))
+        .and(query_param("instance_uuid", "pro-fb1"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "code": "Success",
+            "data": {
+                "region_sign": "west-D",
+                "payg_price": null,
+                "origin_pay_price": null,
+                "snapshot_gpu_alias_name": "4090-48G",
+                "ssh_command": null,
+                "proxy_host": null,
+                "root_password": null,
+                "ssh_port": null,
+                "jupyter_token": null,
+                "jupyter_domain": null,
+                "usage_info": null
+            },
+            "msg": ""
+        })))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = AutoDlClient::new("tok-fb".into(), Some(&server.uri())).unwrap();
+    let status = client.get_pro_status("pro-fb1").await.unwrap();
+    assert_eq!(status, "shutdown");
+
+    let snap = client.get_pro_snapshot("pro-fb1").await.unwrap();
+    assert_eq!(snap.region_sign, "west-D");
+    assert_eq!(snap.ssh_port, 0);
+    assert!(snap.ssh_command.is_empty());
 }

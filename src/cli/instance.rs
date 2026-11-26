@@ -194,6 +194,9 @@ pub async fn handle_new(ctx: &CliContext, args: NewArgs) -> Result<(), AppError>
         args.gpu_count
     ));
     let instance_uuid = client.create_pro_instance(&req).await?;
+    ctx.out.status(&format!(
+        "Created instance {instance_uuid} (session '{session_name}')"
+    ));
 
     store.upsert(SessionRecord {
         name: session_name.clone(),

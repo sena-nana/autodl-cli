@@ -3,7 +3,7 @@ use std::fs;
 use assert_cmd::Command;
 use serde_json::Value;
 use tempfile::TempDir;
-use wiremock::matchers::{body_json, header, method, path};
+use wiremock::matchers::{body_json, header, method, path, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 #[allow(deprecated)]
@@ -203,7 +203,7 @@ async fn test_session_new_boot_script_and_auto_resolve_stop() {
 
     Mock::given(method("GET"))
         .and(path("/api/v1/dev/instance/pro/status"))
-        .and(body_json(serde_json::json!({"instance_uuid": "pro-sess001"})))
+        .and(query_param("instance_uuid", "pro-sess001"))
         .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
             "code": "Success",
             "data": "running",
@@ -215,7 +215,7 @@ async fn test_session_new_boot_script_and_auto_resolve_stop() {
 
     Mock::given(method("GET"))
         .and(path("/api/v1/dev/instance/pro/snapshot"))
-        .and(body_json(serde_json::json!({"instance_uuid": "pro-sess001"})))
+        .and(query_param("instance_uuid", "pro-sess001"))
         .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
             "code": "Success",
             "data": {
@@ -249,7 +249,7 @@ async fn test_session_new_boot_script_and_auto_resolve_stop() {
 
     Mock::given(method("GET"))
         .and(path("/api/v1/dev/instance/pro/status"))
-        .and(body_json(serde_json::json!({"instance_uuid": "pro-sess001"})))
+        .and(query_param("instance_uuid", "pro-sess001"))
         .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
             "code": "Success",
             "data": "shutdown",

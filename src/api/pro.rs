@@ -17,25 +17,34 @@ impl AutoDlClient {
         self.post_json("/api/v1/dev/instance/pro/create", req).await
     }
 
-    /// `GET /api/v1/dev/instance/pro/snapshot` (JSON body `{"instance_uuid": ...}`).
+    async fn get_pro_instance_resource<T: serde::de::DeserializeOwned>(
+        &self,
+        path: &str,
+        instance_uuid: &str,
+    ) -> Result<T, AppError> {
+        let req = InstanceUuidReq { instance_uuid };
+        match self.get_query(path, &req).await {
+            Ok(val) => Ok(val),
+            Err(AppError::Api { ref code, .. }) if code == "RequestParameterIsWrong" => {
+                self.get_with_json_body(path, &req).await
+            }
+            Err(e) => Err(e),
+        }
+    }
+
+    /// `GET /api/v1/dev/instance/pro/snapshot` (query param `instance_uuid`, with JSON body fallback).
     pub async fn get_pro_snapshot(
         &self,
         instance_uuid: &str,
     ) -> Result<ProInstanceSnapshot, AppError> {
-        self.get_with_json_body(
-            "/api/v1/dev/instance/pro/snapshot",
-            &InstanceUuidReq { instance_uuid },
-        )
-        .await
+        self.get_pro_instance_resource("/api/v1/dev/instance/pro/snapshot", instance_uuid)
+            .await
     }
 
-    /// `GET /api/v1/dev/instance/pro/status` (JSON body `{"instance_uuid": ...}`).
+    /// `GET /api/v1/dev/instance/pro/status` (query param `instance_uuid`, with JSON body fallback).
     pub async fn get_pro_status(&self, instance_uuid: &str) -> Result<String, AppError> {
-        self.get_with_json_body(
-            "/api/v1/dev/instance/pro/status",
-            &InstanceUuidReq { instance_uuid },
-        )
-        .await
+        self.get_pro_instance_resource("/api/v1/dev/instance/pro/status", instance_uuid)
+            .await
     }
 
     /// `POST /api/v1/dev/instance/pro/list`
