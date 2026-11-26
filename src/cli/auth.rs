@@ -121,7 +121,13 @@ pub async fn handle_login(ctx: &CliContext, args: LoginArgs) -> Result<(), AppEr
     }
 
     let meta = auth_mgr
-        .login(&profile, &token, args.api_base.clone(), !args.no_verify)
+        .login(
+            &profile,
+            &token,
+            args.api_base.clone(),
+            !args.no_verify,
+            ctx.out.verbose,
+        )
         .await?;
 
     if ctx.out.json {

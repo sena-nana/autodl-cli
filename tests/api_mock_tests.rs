@@ -51,6 +51,16 @@ async fn test_wallet_balance_and_nfs_mount() {
     assert_eq!(bal.accumulate, 45000);
     assert_eq!(bal.voucher_balance, 3000);
 
+    let reqs = server.received_requests().await.unwrap();
+    let balance_req = reqs
+        .iter()
+        .find(|r| r.url.path() == "/api/v1/dev/wallet/balance")
+        .unwrap();
+    assert!(
+        !balance_req.headers.contains_key("content-type"),
+        "bodyless wallet/balance POST should not send Content-Type header"
+    );
+
     client.exclusive_nfs_mount("westDC2", true).await.unwrap();
 }
 

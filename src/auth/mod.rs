@@ -149,6 +149,7 @@ impl AuthManager {
         token: &str,
         api_base_url: Option<String>,
         verify: bool,
+        verbose: bool,
     ) -> Result<ProfileMeta, AppError> {
         validate_profile_name(profile)?;
         let clean_token = token.trim();
@@ -157,10 +158,22 @@ impl AuthManager {
         }
 
         if verify {
-            let client = AutoDlClient::new(clean_token.to_string(), api_base_url.as_deref())?;
+            let client = AutoDlClient::new(clean_token.to_string(), api_base_url.as_deref())?
+                .with_verbose(verbose);
             client.wallet_balance().await.map_err(|e| match e {
-                AppError::Api { msg, .. } => {
-                    AppError::Auth(format!("Token verification failed: {msg}"))
+                AppError::Api {
+                    code,
+                    msg,
+                    request_id,
+                    ..
+                } => {
+                    let rid = request_id
+                        .as_deref()
+                        .map(|r| format!(" [request_id={r}]"))
+                        .unwrap_or_default();
+                    AppError::Auth(format!(
+                        "Token verification failed ({code}): {msg}{rid}"
+                    ))
                 }
                 other => other,
             })?;

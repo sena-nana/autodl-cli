@@ -71,11 +71,10 @@ impl AutoDlClient {
         self.http
             .request(method, url)
             .header(header::AUTHORIZATION, &self.token)
-            .header(header::CONTENT_TYPE, "application/json")
     }
 
     pub async fn post_empty<T: DeserializeOwned>(&self, path: &str) -> Result<T, AppError> {
-        let resp = self.build(Method::POST, path).send().await?;
+        let resp = self.build(Method::POST, path).body("").send().await?;
         self.parse_response(resp).await
     }
 
@@ -159,6 +158,12 @@ impl AutoDlClient {
         })?;
 
         if env.code != "Success" {
+            if self.verbose {
+                eprintln!(
+                    "[debug] API error code={} msg={} request_id={:?}",
+                    env.code, env.msg, env.request_id
+                );
+            }
             return Err(AppError::Api {
                 code: env.code,
                 msg: if env.msg.is_empty() {
@@ -201,6 +206,12 @@ impl AutoDlClient {
         })?;
 
         if env.code != "Success" {
+            if self.verbose {
+                eprintln!(
+                    "[debug] API error code={} msg={} request_id={:?}",
+                    env.code, env.msg, env.request_id
+                );
+            }
             return Err(AppError::Api {
                 code: env.code,
                 msg: if env.msg.is_empty() {
