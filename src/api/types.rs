@@ -1,11 +1,19 @@
 use std::collections::BTreeMap;
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
+
+fn null_as_default<'de, D, T>(deserializer: D) -> Result<T, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Default + Deserialize<'de>,
+{
+    Ok(Option::deserialize(deserializer)?.unwrap_or_default())
+}
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct ApiEnvelope<T> {
     pub code: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "null_as_default")]
     pub msg: String,
     #[serde(default)]
     pub request_id: Option<String>,
@@ -14,7 +22,11 @@ pub struct ApiEnvelope<T> {
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct PagedList<T> {
-    #[serde(default)]
+    #[serde(
+        default,
+        deserialize_with = "null_as_default",
+        bound(deserialize = "T: Deserialize<'de>")
+    )]
     pub list: Vec<T>,
     #[serde(default)]
     pub page_index: u32,
@@ -90,7 +102,7 @@ pub struct PageReq {
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct GoNullTime {
-    #[serde(rename = "Time", default)]
+    #[serde(rename = "Time", default, deserialize_with = "null_as_default")]
     pub time: String,
     #[serde(rename = "Valid", default)]
     pub valid: bool,

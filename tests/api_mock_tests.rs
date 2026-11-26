@@ -455,3 +455,47 @@ async fn test_elastic_deployment_and_gpu_stock() {
     client.stop_deployment("dep-xyz").await.unwrap();
     client.delete_deployment("dep-xyz").await.unwrap();
 }
+
+#[tokio::test]
+async fn test_go_null_lists_and_null_data_deserialize_as_empty() {
+    let server = MockServer::start().await;
+
+    Mock::given(method("POST"))
+        .and(path("/api/v1/dev/instance/pro/image/private/list"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "code": "Success",
+            "data": {
+                "list": null,
+                "page_index": 1,
+                "page_size": 20,
+                "offset": 0,
+                "max_page": 1,
+                "result_total": 0,
+                "page": 1
+            },
+            "msg": "",
+            "request_id": "92f2efc99aad695e6823a4116e6cda61"
+        })))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    Mock::given(method("GET"))
+        .and(path("/api/v1/dev/deployment/blacklist"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "code": "Success",
+            "data": null,
+            "msg": null
+        })))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let client = AutoDlClient::new("tok-null".into(), Some(&server.uri())).unwrap();
+    let imgs = client.list_pro_private_images(1, 20).await.unwrap();
+    assert!(imgs.list.is_empty());
+    assert_eq!(imgs.result_total, 0);
+
+    let blacklist = client.list_deployment_blacklist().await.unwrap();
+    assert!(blacklist.is_empty());
+}

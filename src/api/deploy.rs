@@ -19,7 +19,7 @@ struct DdpQuery<'a> {
 impl AutoDlClient {
     /// `POST /api/v1/dev/machine/region/gpu_stock`
     pub async fn gpu_stock(&self, req: &GpuStockReq) -> Result<Vec<GpuStockItem>, AppError> {
-        self.post_json("/api/v1/dev/machine/region/gpu_stock", req)
+        self.post_json_or_default("/api/v1/dev/machine/region/gpu_stock", req)
             .await
     }
 
@@ -126,7 +126,8 @@ impl AutoDlClient {
 
     /// `GET /api/v1/dev/deployment/blacklist`
     pub async fn list_deployment_blacklist(&self) -> Result<Vec<BlacklistEntry>, AppError> {
-        self.get_empty("/api/v1/dev/deployment/blacklist").await
+        self.get_empty_or_default("/api/v1/dev/deployment/blacklist")
+            .await
     }
 
     /// `GET /api/v1/dev/deployment/ddp/overview?deployment_uuid=...`
@@ -134,7 +135,7 @@ impl AutoDlClient {
         &self,
         deployment_uuid: &str,
     ) -> Result<Vec<DdpOverviewItem>, AppError> {
-        self.get_query(
+        self.get_query_or_default(
             "/api/v1/dev/deployment/ddp/overview",
             &DdpQuery { deployment_uuid },
         )

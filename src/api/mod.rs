@@ -87,6 +87,15 @@ impl AutoDlClient {
         self.parse_response(resp).await
     }
 
+    pub async fn post_json_or_default<B: Serialize, T: DeserializeOwned + Default>(
+        &self,
+        path: &str,
+        body: &B,
+    ) -> Result<T, AppError> {
+        let resp = self.build(Method::POST, path).json(body).send().await?;
+        self.parse_response_or_default(resp).await
+    }
+
     pub async fn post_json_unit<B: Serialize>(&self, path: &str, body: &B) -> Result<(), AppError> {
         let resp = self.build(Method::POST, path).json(body).send().await?;
         self.parse_unit_response(resp).await
@@ -107,6 +116,14 @@ impl AutoDlClient {
         self.parse_response(resp).await
     }
 
+    pub async fn get_empty_or_default<T: DeserializeOwned + Default>(
+        &self,
+        path: &str,
+    ) -> Result<T, AppError> {
+        let resp = self.build(Method::GET, path).send().await?;
+        self.parse_response_or_default(resp).await
+    }
+
     pub async fn get_query<Q: Serialize, T: DeserializeOwned>(
         &self,
         path: &str,
@@ -114,6 +131,15 @@ impl AutoDlClient {
     ) -> Result<T, AppError> {
         let resp = self.build(Method::GET, path).query(query).send().await?;
         self.parse_response(resp).await
+    }
+
+    pub async fn get_query_or_default<Q: Serialize, T: DeserializeOwned + Default>(
+        &self,
+        path: &str,
+        query: &Q,
+    ) -> Result<T, AppError> {
+        let resp = self.build(Method::GET, path).query(query).send().await?;
+        self.parse_response_or_default(resp).await
     }
 
     pub async fn put_json_unit<B: Serialize>(&self, path: &str, body: &B) -> Result<(), AppError> {
@@ -134,6 +160,22 @@ impl AutoDlClient {
         &self,
         resp: reqwest::Response,
     ) -> Result<T, AppError> {
+        self.parse_envelope(resp).await?.data.ok_or_else(|| {
+            AppError::Other("AutoDL API returned Success with missing 'data' field".into())
+        })
+    }
+
+    async fn parse_response_or_default<T: DeserializeOwned + Default>(
+        &self,
+        resp: reqwest::Response,
+    ) -> Result<T, AppError> {
+        Ok(self.parse_envelope(resp).await?.data.unwrap_or_default())
+    }
+
+    async fn parse_envelope<T: DeserializeOwned>(
+        &self,
+        resp: reqwest::Response,
+    ) -> Result<ApiEnvelope<T>, AppError> {
         let status = resp.status();
         let text = resp.text().await?;
         if self.verbose {
@@ -176,9 +218,7 @@ impl AutoDlClient {
             });
         }
 
-        env.data.ok_or_else(|| {
-            AppError::Other("AutoDL API returned Success with missing 'data' field".into())
-        })
+        Ok(env)
     }
 
     async fn parse_unit_response(&self, resp: reqwest::Response) -> Result<(), AppError> {

@@ -63,6 +63,10 @@ pub async fn handle_images(ctx: &CliContext, args: ImagesArgs) -> Result<(), App
                     }))?;
                     return Ok(());
                 }
+                if res.list.is_empty() {
+                    ctx.out.println("No private images found.");
+                    return Ok(());
+                }
                 let mut table = make_table(&["ID", "UUID", "Name"]);
                 for img in res.list {
                     table.add_row(vec![
@@ -80,6 +84,10 @@ pub async fn handle_images(ctx: &CliContext, args: ImagesArgs) -> Result<(), App
                         "kind": "pro",
                         "data": res,
                     }))?;
+                    return Ok(());
+                }
+                if res.list.is_empty() {
+                    ctx.out.println("No private images found.");
                     return Ok(());
                 }
                 let mut table = make_table(&["UUID", "Name", "Status", "Size", "Created"]);
